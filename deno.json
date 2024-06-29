@@ -1,9 +1,8 @@
 {
   "name": "@andyb/env",
   "version": "0.0.1",
-  "exports": "./mod.ts",
+  "exports": "./src/mod.ts",
   "tasks": {
-    "dev": "deno run --watch main.ts",
     "init:cache": "deno cache npm:husky npm:lint-staged",
     "init:husky": "deno run -A npm:husky",
     "init": "deno task init:cache && deno task init:husky",
