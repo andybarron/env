@@ -1,0 +1,10 @@
+{
+  "deno.enable": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "eslint.enable": false,
+  "prettier.enable": false,
+  "[json][jsonc][typescript][javascript][markdown]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  }
+}
