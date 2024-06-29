@@ -52,7 +52,12 @@ assertStrictEquals(
 // check git
 const git = new GITUtility();
 const dirty = await git.hasUncommittedChanges();
-const branch = await git.runCommand("branch");
+const branch = (await git.runCommand("branch"))
+  .replace(/^\* /, "")
+  .replace(
+    /\n$/,
+    "",
+  );
 assert(!dirty, "Git repository has uncommitted changes!");
 assertStrictEquals(
   branch,
