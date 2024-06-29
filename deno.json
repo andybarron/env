@@ -1,15 +1,19 @@
 {
   "name": "@andyb/env",
-  "version": "0.0.1-dev",
+  "version": "0.0.1-dev.0",
   "exports": "./src/mod.ts",
   "tasks": {
-    "init:cache": "deno cache npm:husky npm:lint-staged",
-    "init:husky": "deno run -A npm:husky",
-    "init": "deno task init:cache && deno task init:husky",
-    "lint-staged": "deno run -A npm:lint-staged"
+    "init": "deno run -A npm:husky",
+    "lint-staged": "deno run -A npm:lint-staged",
+    "release": "deno run -A scripts/release.ts"
   },
   "publish": {
     "include": ["src/**/*", "LICENSE.md", "README.md"],
     "exclude": ["src/**/*.test.*"]
+  },
+  "lint": {
+    "rules": {
+      "include": ["no-console"]
+    }
   }
 }
