@@ -3,7 +3,7 @@
   "version": "0.0.2-dev.0",
   "exports": "./src/mod.ts",
   "tasks": {
-    "cache": "deno cache scripts/**/* src/**/*",
+    "cache": "deno cache scripts/**/* src/**/* npm:husky npm:lint-staged",
     "clean": "rm -rf coverage",
     "coverage": "deno test --coverage && deno coverage --html && open coverage/html/index.html",
     "init": "deno task cache && deno run -A npm:husky",
