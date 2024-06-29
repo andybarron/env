@@ -2,7 +2,8 @@ import type { ParseFailure } from "./types.ts";
 
 export class EnvironmentVariableParseError extends Error {
   failures: ParseFailure[];
-  constructor(failures: ParseFailure[]) {
+  constructor(allFailures: readonly ParseFailure[]) {
+    const failures = allFailures.toSorted(failureSort);
     let message = "Failed to parse environment variables";
     if (failures.length) {
       const failSummary = failures.map(({ name, description }) =>
@@ -15,3 +16,13 @@ export class EnvironmentVariableParseError extends Error {
     this.failures = failures;
   }
 }
+
+const failureSort = (a: ParseFailure, b: ParseFailure): -1 | 0 | 1 => {
+  if (a.name < b.name) {
+    return -1;
+  }
+  if (a.name > b.name) {
+    return 1;
+  }
+  return 0; // TODO: coverage ignore - https://github.com/denoland/deno/issues/16626
+};

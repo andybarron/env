@@ -3,9 +3,13 @@
   "version": "0.0.2-dev.0",
   "exports": "./src/mod.ts",
   "tasks": {
-    "init": "deno run -A npm:husky",
+    "cache": "deno cache scripts/**/* src/**/*",
+    "clean": "rm -rf coverage",
+    "coverage": "deno test --coverage && deno coverage --html && open coverage/html/index.html",
+    "init": "deno task cache && deno run -A npm:husky",
     "lint-staged": "deno run -A npm:lint-staged",
-    "release": "deno run -A scripts/release.ts"
+    "release": "deno run -A scripts/release.ts",
+    "update": "deno task cache --reload --lock-write --lock deno.lock"
   },
   "publish": {
     "include": ["src/**/*", "LICENSE.md", "README.md"],
