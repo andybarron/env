@@ -1,6 +1,6 @@
 {
   "name": "@andyb/env",
-  "version": "0.0.1-dev.0",
+  "version": "0.0.1",
   "exports": "./src/mod.ts",
   "tasks": {
     "init": "deno run -A npm:husky",
