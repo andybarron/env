@@ -2,6 +2,10 @@
 
 _Parse environment variables in Node, Deno, and Bun_
 
+[![JSR Score](https://jsr.io/badges/@andyb/env/score)](https://jsr.io/@andyb/env)
+[![JSR](https://jsr.io/badges/@andyb/env)](https://jsr.io/@andyb/env)
+[![JSR Scope](https://jsr.io/badges/@andyb)](https://jsr.io/@andyb)
+
 ## Installation
 
 | Package manager | Install command                |
