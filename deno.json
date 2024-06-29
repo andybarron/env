@@ -4,7 +4,9 @@
   "exports": "./mod.ts",
   "tasks": {
     "dev": "deno run --watch main.ts",
-    "init": "deno run -A npm:husky",
+    "init:cache": "deno cache npm:husky npm:lint-staged",
+    "init:husky": "deno run -A npm:husky",
+    "init": "deno task init:cache && deno task init:husky",
     "lint-staged": "deno run -A npm:lint-staged"
   },
   "publish": {

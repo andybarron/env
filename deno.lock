@@ -2,6 +2,7 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "npm:husky": "npm:husky@9.0.11",
       "npm:lint-staged": "npm:lint-staged@15.2.7"
     },
     "npm": {
@@ -100,6 +101,10 @@
       },
       "human-signals@5.0.0": {
         "integrity": "sha512-AXcZb6vzzrFAUE61HnN4mpLqd/cSIwNQjtNWR0euPm6y0iqx3G4gOXaIDdtdDwZmhwe82LA6+zinmW4UBWVePQ==",
+        "dependencies": {}
+      },
+      "husky@9.0.11": {
+        "integrity": "sha512-AB6lFlbwwyIqMdHYhwPe+kjOC3Oc5P3nThEoW/AaO2BX3vJDjWPFxYLxokUZOo6RNX20He3AaT8sESs9NJcmEw==",
         "dependencies": {}
       },
       "is-fullwidth-code-point@4.0.0": {
