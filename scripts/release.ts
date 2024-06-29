@@ -1,194 +1,127 @@
-import { parseArgs, type ParseOptions } from "jsr:@std/cli";
-import {} from "jsr:@std/semver";
-import { log, logStyles, sleep } from "./util.ts";
-import * as semver from "jsr:@std/semver";
 import { assert, assertStrictEquals } from "jsr:@std/assert";
-import { GITUtility } from "jsr:@utility/git";
+import { parseArgs, type ParseOptions } from "jsr:@std/cli";
 import { dirname } from "jsr:@std/path";
+import * as semver from "jsr:@std/semver";
+import { GITUtility } from "jsr:@utility/git";
+import { log, prompt, type RemoveIndex } from "./util.ts";
 
-// parse CLI args
-const argConfig = {
-  boolean: ["help", "dry-run", "allow-dirty"],
-  string: ["version", "next-version"],
-  default: { dryRun: false },
-  unknown: (raw, key) => {
+const parseOptions = {
+  boolean: ["help", "skip-publish", "skip-tag"],
+  unknown: (arg, key) => {
     if (typeof key === "string") {
-      extraFlags.push(key);
+      log.error(`Unknown flag: ${JSON.stringify(key)}`);
     } else {
-      extraArgs.push(raw);
+      log.error(`Unknown positional argument: ${JSON.stringify(arg)}`);
     }
-    return false;
+    Deno.exit(1);
   },
 } as const satisfies ParseOptions;
-const extraArgs: string[] = [];
-const extraFlags: string[] = [];
-const parsedArgs = parseArgs(
-  Deno.args,
-  argConfig,
-);
-// safely unpack args
-const showHelp: boolean = parsedArgs["help"];
-const dryRun: boolean = parsedArgs["dry-run"];
-const allowDirty: boolean = parsedArgs["allow-dirty"];
-const versionArg: string | undefined = parsedArgs["version"];
-const nextVersionArg: string | undefined = parsedArgs["next-version"];
 
-const printUsage = () => {
-  const message = [
-    "Flags:",
-    ...argConfig.boolean.map((f) => `--${f}`),
-    "Options:",
-    ...argConfig.string.map((f) => `--${f}`),
-  ].join("\n");
-  log.error(message, logStyles.info);
-};
+const allFlags = [
+  ...parseOptions.boolean,
+].sort();
 
-if (showHelp) {
-  printUsage();
+const args = (() => {
+  const all = parseArgs(Deno.args, parseOptions);
+  const args: Omit<RemoveIndex<typeof all>, "_"> = all;
+  return args;
+})();
+
+if (args.help) {
+  log.info("Recognized flags:");
+  for (const flag of allFlags) {
+    log.info(`--${flag}`);
+  }
   Deno.exit();
 }
 
-let argError = false;
-
-if (extraArgs.length) {
-  const unrecognized = extraArgs
-    .map((arg) => arg.toString())
-    .map((str) => JSON.stringify(str))
-    .join(", ");
-  const message = `Unrecognized positional arguments: ${unrecognized}`;
-  log.error(message);
-  argError = true;
-}
-
-if (extraFlags.length) {
-  const unrecognized = extraFlags
-    .map((arg) => arg.toString())
-    .map((str) => JSON.stringify(str))
-    .join(", ");
-  const message = `Unrecognized flags: ${unrecognized}`;
-  log.error(message);
-  argError = true;
-}
-
-if (argError) {
-  printUsage();
-  Deno.exit(1);
-}
+const skipPublish = args["skip-publish"];
+const skipTag = args["skip-tag"];
 
 // check cwd
 const scriptDir = import.meta.dirname;
 assert(scriptDir);
 const rootDir = dirname(scriptDir);
 const cwd = Deno.cwd();
-if (rootDir !== cwd) {
-  log.error(
-    `Script must be run from repository root: ${JSON.stringify(rootDir)}`,
+assertStrictEquals(
+  cwd,
+  rootDir,
+  `Script must be run from repository root: ${JSON.stringify(rootDir)}`,
+);
+
+// check git
+const git = new GITUtility();
+const dirty = await git.hasUncommittedChanges();
+const branch = await git.runCommand("branch");
+assert(!dirty, "Git repository has uncommitted changes!");
+assertStrictEquals(
+  branch,
+  "main",
+  `Current Git branch (${branch}) is not main!`,
+);
+
+// get version info
+async function getCurrentPackageVersion(): Promise<semver.SemVer | undefined> {
+  const text = await Deno.readTextFile("deno.json");
+  const json: unknown = JSON.parse(text);
+  assert(
+    json && typeof json === "object",
+    'Invalid "deno.json"',
   );
+  try {
+    assert("version" in json && typeof json.version === "string");
+    return semver.parse(json.version);
+  } catch {
+    return undefined;
+  }
+}
+const startingVersion = await getCurrentPackageVersion();
+const startingVersionString = startingVersion == undefined
+  ? "(unknown)"
+  : semver.format(startingVersion);
+log.info(
+  `Current version: ${startingVersionString}`,
+);
+
+const releaseVersion = semver.parse(
+  prompt("Enter new release version:"),
+);
+const defaultPostReleaseVersion = semver.increment(
+  releaseVersion,
+  "prerelease",
+  releaseVersion.prerelease?.[0]?.toString() ?? "dev",
+);
+const postReleaseVersion = semver.parse(
+  prompt(
+    "Enter post-release version:",
+    semver.format(defaultPostReleaseVersion),
+  )!,
+);
+
+const releaseVersionString = semver.format(releaseVersion);
+const postReleaseVersionString = semver.format(postReleaseVersion);
+
+log.warn(
+  `Publishing ${releaseVersionString}, then bumping to ${postReleaseVersionString}`,
+);
+if (!confirm("Continue?")) {
   Deno.exit(1);
 }
 
-// check git
-const git = new GITUtility(".");
-async function checkUncommittedChanges() {
-  const dirty = await git.hasUncommittedChanges();
-  const branch = await git.runCommand("branch");
-  const wrongBranch = branch !== "main";
-  if (dirty || wrongBranch) {
-    dirty && log.warn("Git repository has uncommitted changes!");
-    wrongBranch && log.warn("Current Git branch is not main!");
-    if (!allowDirty) {
-      const continueAnyway = confirm("Continue anyway?");
-      if (!continueAnyway) {
-        Deno.exit(1);
-      }
-    }
-    log.warn("Continuing anyway...");
-    await sleep(3);
-  }
-}
-await checkUncommittedChanges();
-
-// get version info
-async function getCurrentPackageVersion(): Promise<semver.SemVer> {
+// commit and push release version
+async function updateCommitPushNewVersion(
+  version: string,
+): Promise<void> {
+  semver.parse(version); // validate semver
+  log.info(`Setting package version to ${version}`);
   const text = await Deno.readTextFile("deno.json");
   const json: unknown = JSON.parse(text);
   assert(
     json && typeof json === "object" && "version" in json &&
-      typeof json["version"] === "string",
+      typeof json.version === "string",
+    'Could not find "version" field in deno.json',
   );
-  assert("version" in json && typeof json["version"] === "string");
-  return semver.parse(json.version);
-}
-log.info(
-  `Current version: ${semver.format(await getCurrentPackageVersion())}`,
-);
-
-const promptForVersion = (
-  message: string,
-  { arg, default: default_ }: {
-    arg?: string;
-    default?: semver.SemVer;
-  },
-): semver.SemVer => {
-  if (arg != undefined) {
-    try {
-      return semver.parse(arg);
-    } catch {
-      log.error(`Invalid version: ${JSON.stringify(arg)}`);
-      Deno.exit(1);
-    }
-  }
-  while (true) {
-    const input = prompt(
-      message,
-      default_ && semver.format(default_),
-    )?.trim();
-    assert(typeof input === "string", "Not a TTY");
-    if (!input) {
-      continue;
-    }
-    try {
-      return semver.parse(input);
-    } catch {
-      log.error("Invalid version");
-    }
-  }
-};
-
-const releaseVersion = promptForVersion(
-  "Enter new release version:",
-  {
-    arg: versionArg,
-  },
-);
-const postReleaseVersion = promptForVersion(
-  "Enter post-release version:",
-  {
-    arg: nextVersionArg,
-    default: semver.increment(
-      releaseVersion,
-      "prerelease",
-      releaseVersion.prerelease?.[0]?.toString() ?? "dev",
-    ),
-  },
-);
-
-// update, push, and tag new release version
-async function updatePackageVersion(
-  version: semver.SemVer,
-  { createTag }: { createTag: boolean },
-): Promise<void> {
-  if (dryRun) {
-    log.warn("Dry run: Skipping package version update");
-    return;
-  }
-  log.info(
-    `Setting package version to ${JSON.stringify(semver.format(version))}`,
-  );
-  const text = await Deno.readTextFile("deno.json");
-  const json: unknown = JSON.parse(text);
-  assert(json && typeof json === "object" && "version" in json);
-  json["version"] = semver.format(version);
+  json["version"] = version;
   const output = JSON.stringify(json, null, 2);
   await Deno.writeTextFile("deno.json", output);
   const formatCommand = new Deno.Command(Deno.execPath(), {
@@ -196,45 +129,58 @@ async function updatePackageVersion(
   });
   const result = await formatCommand.output();
   assert(result.success);
-  assertStrictEquals(
-    semver.format(await getCurrentPackageVersion()),
-    semver.format(version),
-  );
+  const newVersion = await getCurrentPackageVersion();
+  assertStrictEquals(newVersion, version, "Package update failed");
   log.info("Committing and pushing version bump");
   await git.runCommand("add", "deno.json");
   await git.runCommand(
     "commit",
     "-m",
-    `chore: bump version to $${semver.format(version)}`,
+    `chore: bump version to ${version}`,
   );
   await git.runCommand("push");
-  if (createTag) {
-    const tag = `v${semver.format(version)}`;
-    log.info(`Pushing Git tag: ${JSON.stringify(tag)}`);
-    await git.runCommand("tag", tag);
-    await git.runCommand("push", "origin", "tag", tag);
-  }
 }
-await checkUncommittedChanges();
-await updatePackageVersion(releaseVersion, { createTag: true });
 
-// publish to JSR
-const publishArgs = [];
-if (dryRun) {
-  publishArgs.push("--dry-run");
+if (startingVersionString === releaseVersionString) {
+  log.info(
+    "Skipping version update since release version matches current version",
+  );
+} else {
+  await updateCommitPushNewVersion(releaseVersionString);
 }
-if (allowDirty) {
-  publishArgs.push("--allow-dirty");
-}
+
+log.info(
+  skipPublish
+    ? "Running `deno publish --dry-run` command"
+    : "Running `deno publish` command",
+);
 const publishCommand = new Deno.Command(Deno.execPath(), {
-  args: ["publish", ...publishArgs],
-  stdin: "null",
+  args: skipPublish ? ["publish", "--dry-run"] : ["publish"],
+  stdin: "inherit",
   stdout: "inherit",
   stderr: "inherit",
 });
 const publishResult = await publishCommand.output();
-if (!publishResult.success) {
-  const { code } = publishResult;
-  log.error(`"deno publish" command failed with error code ${code}`);
-  Deno.exit(1);
+assert(
+  publishResult.success,
+  `"deno publish" command failed with error code ${publishResult.code}`,
+);
+
+// push release tag
+if (skipTag) {
+  log.info("Skipping Git tag");
+} else {
+  const tag = `v${releaseVersionString}`;
+  log.info(`Creating and pushing Git tag: ${JSON.stringify(tag)}`);
+  await git.runCommand("tag", tag);
+  await git.runCommand("push", "origin", "tag", tag);
+}
+
+// commit and push post-release version
+if (startingVersionString === releaseVersionString) {
+  log.info(
+    "Skipping version update since post-release version matches release version",
+  );
+} else {
+  await updateCommitPushNewVersion(postReleaseVersionString);
 }
