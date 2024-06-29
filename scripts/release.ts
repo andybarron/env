@@ -6,7 +6,7 @@ import { GITUtility } from "jsr:@utility/git";
 import { log, prompt, type RemoveIndex, sleep } from "./util.ts";
 
 const parseOptions = {
-  boolean: ["help", "skip-publish", "skip-tag", "allow-dirty"],
+  boolean: ["help", "publish-local", "skip-tag", "allow-dirty"],
   unknown: (arg, key) => {
     if (typeof key === "string") {
       log.error(`Unknown flag: ${JSON.stringify(key)}`);
@@ -35,7 +35,7 @@ if (args.help) {
   Deno.exit();
 }
 
-const skipPublish = args["skip-publish"];
+const publishLocal = args["publish-local"];
 const skipTag = args["skip-tag"];
 const allowDirty = args["allow-dirty"];
 
@@ -159,32 +159,31 @@ if (startingVersionString === releaseVersionString) {
   await updateCommitPushNewVersion(releaseVersionString);
 }
 
-const publishArgs: string[] = [];
-if (skipPublish) {
-  publishArgs.push("--dry-run");
+if (publishLocal) {
+  const publishArgs: string[] = [];
+  if (allowDirty) {
+    publishArgs.push("--allow-dirty");
+  }
+  const publishDisplayCommand = ["deno publish", ...publishArgs].join(" ");
+  log.info(`Running command: ${publishDisplayCommand}`);
+  const publishCommand = new Deno.Command(Deno.execPath(), {
+    args: ["publish", ...publishArgs],
+    stdin: "inherit",
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  const publishResult = await publishCommand.output();
+  assert(
+    publishResult.success,
+    `"deno publish" command failed with error code ${publishResult.code}`,
+  );
 }
-if (allowDirty) {
-  publishArgs.push("--allow-dirty");
-}
-const publishDisplayCommand = ["deno publish", ...publishArgs].join(" ");
-log.info(`Running command: ${publishDisplayCommand}`);
-const publishCommand = new Deno.Command(Deno.execPath(), {
-  args: ["publish", ...publishArgs],
-  stdin: "inherit",
-  stdout: "inherit",
-  stderr: "inherit",
-});
-const publishResult = await publishCommand.output();
-assert(
-  publishResult.success,
-  `"deno publish" command failed with error code ${publishResult.code}`,
-);
 
 // push release tag
 if (skipTag) {
   log.info("Skipping Git tag");
 } else {
-  const tag = `v${releaseVersionString}`;
+  const tag = `release/${releaseVersionString}`;
   log.info(`Creating and pushing Git tag: ${JSON.stringify(tag)}`);
   await git.runCommand("tag", tag);
   await git.runCommand("push", "origin", "tag", tag);
