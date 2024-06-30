@@ -45,7 +45,7 @@ const config = {
 
 // If one or more variables fail to parse, this
 // throws a helpful error listing every failure.
-const vars = env.parse(
+const vars = await env.parse(
   process.env, // or Deno.env
   config,
 );
