@@ -9,7 +9,7 @@
     "coverage": "deno test --coverage && deno coverage --html && open coverage/html/index.html",
     "init": "deno task cache && deno run -A npm:husky",
     "lint-staged": "deno run -A npm:lint-staged",
-    "preflight": "deno fmt --check && deno lint && deno check src/** && deno test --coverage && deno coverage",
+    "preflight": "deno fmt --check && deno lint && deno check src/**/*.ts && deno test --coverage && deno coverage",
     "release": "deno run -A scripts/release.ts",
     "update": "deno task cache --reload --lock-write --lock deno.lock"
   },
