@@ -4,27 +4,29 @@ on:
   push:
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
+    env:
+      DENO_DIR: deno_ci_cache
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Deno dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.DENO_DIR }}
+          key: ${{ hashFiles('deno.lock') }}
       - uses: denoland/setup-deno@v1
         with:
           deno-version: vx.x.x
-      - run: deno test # TODO: Coverage report
-  fmt:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: denoland/setup-deno@v1
+      - name: Check code style
+        run: deno fmt --check
+      - name: Lint code
+        run: deno lint
+      - name: Run tests
+        run: deno test --coverage
+      - name: Generate coverage report
+        run: deno coverage --lcov
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
         with:
-          deno-version: vx.x.x
-      - run: deno fmt --check
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: denoland/setup-deno@v1
-        with:
-          deno-version: vx.x.x
-      - run: deno lint
+          use_oidc: true
