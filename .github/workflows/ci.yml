@@ -6,6 +6,8 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     env:
       DENO_DIR: deno_ci_cache
     steps:
