@@ -28,7 +28,7 @@ jobs:
       - name: Run tests
         run: deno test --coverage
       - name: Generate coverage report
-        run: deno coverage --lcov
+        run: deno coverage --lcov > coverage/report.lcov
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
         with:
