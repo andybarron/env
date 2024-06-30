@@ -9,6 +9,7 @@
       "jsr:@std/path": "jsr:@std/path@0.225.2",
       "jsr:@std/semver": "jsr:@std/semver@0.224.3",
       "jsr:@utility/git": "jsr:@utility/git@0.4.1",
+      "npm:enquoraging": "npm:enquoraging@1.4.0",
       "npm:husky": "npm:husky@9.0.11",
       "npm:lint-staged": "npm:lint-staged@15.2.7"
     },
@@ -98,6 +99,10 @@
       },
       "emoji-regex@10.3.0": {
         "integrity": "sha512-QpLs9D9v9kArv4lfDEgg1X/gN5XLnf/A6l9cs8SPZLRZR3ZkY9+kwIQTxm+fsSej5UMYGE8fdoaZVIBlqG0XTw==",
+        "dependencies": {}
+      },
+      "enquoraging@1.4.0": {
+        "integrity": "sha512-ZI9Qm9Z1YzQelISiEt/KCXgcpQg96I8PkhqKxpPhIOm7FJR/mZ4qdsS3Csnf4BXeNB+OgCz3f++BFfT5cbzrKw==",
         "dependencies": {}
       },
       "eventemitter3@5.0.1": {

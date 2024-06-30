@@ -3,7 +3,13 @@ import { parseArgs, type ParseOptions } from "jsr:@std/cli";
 import { dirname } from "jsr:@std/path";
 import * as semver from "jsr:@std/semver";
 import { GITUtility } from "jsr:@utility/git";
-import { log, prompt, type RemoveIndex, sleep } from "./util.ts";
+import {
+  log,
+  printRandomQuote,
+  prompt,
+  type RemoveIndex,
+  sleep,
+} from "./util.ts";
 
 const parseOptions = {
   boolean: ["help", "publish-local", "skip-tag", "allow-dirty"],
@@ -117,6 +123,20 @@ log.warn(
 if (!confirm("Continue?")) {
   Deno.exit(1);
 }
+
+// run tests etc.
+log.info("Running preflight checks...");
+const preflight = new Deno.Command(Deno.execPath(), {
+  args: ["task", "preflight"],
+}).spawn();
+const preflightResult = await preflight.output();
+if (!preflightResult.success) {
+  log.error("Preflight checks failed");
+  Deno.exit(1);
+}
+log.info("Preflight checks passed 🚀");
+printRandomQuote();
+await sleep(3);
 
 // commit and push release version
 async function updateCommitPushNewVersion(
