@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0
+
+- Add support for custom parsers
+
 ## 0.0.3
 
 - Add CHANGELOG
