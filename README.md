@@ -11,13 +11,13 @@ _Parse environment variables in Node, Deno, and Bun_
 
 ## Installation
 
-| Package manager | Install command                |
-| --------------- | ------------------------------ |
-| Bun             | `bunx jsr add @andyb/env`      |
-| Deno            | `deno add @andyb/env`          |
-| NPM             | `npx jsr add @andyb/env`       |
-| PNPM            | `pnpm dlx jsr add @andyb/env`z |
-| Yarn            | `yarn dlx jsr add @andyb/env`  |
+| Package manager | Install command               |
+| --------------- | ----------------------------- |
+| Bun             | `bunx jsr add @andyb/env`     |
+| Deno            | `deno add @andyb/env`         |
+| NPM             | `npx jsr add @andyb/env`      |
+| PNPM            | `pnpm dlx jsr add @andyb/env` |
+| Yarn            | `yarn dlx jsr add @andyb/env` |
 
 ## Usage
 
