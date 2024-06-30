@@ -1,6 +1,6 @@
 {
   "name": "@andyb/env",
-  "version": "0.0.3",
+  "version": "0.0.4-dev.0",
   "exports": "./src/mod.ts",
   "tasks": {
     "cache": "deno cache scripts/**/* src/**/* npm:husky npm:lint-staged",
