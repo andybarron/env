@@ -3,6 +3,8 @@
 ## 0.1.0
 
 - Add support for custom parsers
+- Make `parse` async to support async custom parsers
+- Add doc comments :tada:
 - Add typecheck step to CI
 
 ## 0.0.3

@@ -1,6 +1,12 @@
 import type { ParseFailure } from "./types.ts";
 
+/**
+ * Error type with information on every variable that failed to parse
+ */
 export class EnvironmentVariableParseError extends Error {
+  /**
+   * List of all parse failures that occurred
+   */
   failures: ParseFailure[];
   constructor(allFailures: readonly ParseFailure[]) {
     const failures = allFailures.toSorted(failureSort);

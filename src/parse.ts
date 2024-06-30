@@ -12,10 +12,17 @@ function isDenoEnv(env: Environment): env is DenoEnv {
   return typeof env.get === "function";
 }
 
-export function parse<T extends EnvironmentConfig>(
+/**
+ * Parse data from a given environment. Both `process.env` and
+ * `Deno.env` are supported.
+ *
+ * Custom parsers can be asynchronous, so this function returns
+ * a promise.
+ */
+export async function parse<T extends EnvironmentConfig>(
   env: Environment,
   config: T,
-): ValuesFromConfig<T> {
+): Promise<ValuesFromConfig<T>> {
   const get = isDenoEnv(env)
     ? (name: string) => env.get(name)
     : (name: string) => env[name];
@@ -35,7 +42,7 @@ export function parse<T extends EnvironmentConfig>(
       continue;
     }
     try {
-      const parsed = parse(value);
+      const parsed = await parse(value);
       values[name] = parsed;
     } catch (error: unknown) {
       failures.push({ name, description, cause: error });

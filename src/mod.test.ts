@@ -1,8 +1,8 @@
 import {
   assertEquals,
   assertInstanceOf,
+  assertRejects,
   assertStrictEquals,
-  assertThrows,
 } from "jsr:@std/assert";
 import * as env from "./mod.ts";
 
@@ -10,7 +10,7 @@ const parseBigInt = (value: string) => BigInt(value);
 
 const bigIntParser = env.custom("must be a valid BigInt", parseBigInt);
 
-Deno.test("happy path works for all built-in parsers with Node-like env", () => {
+Deno.test("happy path works for all built-in parsers with Node-like env", async () => {
   const config = {
     INTEGER: env.integer(),
     JSON: env.json(),
@@ -41,7 +41,7 @@ Deno.test("happy path works for all built-in parsers with Node-like env", () => 
     BIG_INT: bigint;
   };
 
-  const vars: ExpectedInferredType = env.parse(
+  const vars: ExpectedInferredType = await env.parse(
     testEnv,
     config,
   );
@@ -59,7 +59,7 @@ Deno.test("happy path works for all built-in parsers with Node-like env", () => 
   });
 });
 
-Deno.test("happy path works for all built-in parsers with Deno-like env", () => {
+Deno.test("happy path works for all built-in parsers with Deno-like env", async () => {
   const config = {
     INTEGER: env.integer(),
     JSON: env.json(),
@@ -96,7 +96,7 @@ Deno.test("happy path works for all built-in parsers with Deno-like env", () => 
     BIG_INT: bigint;
   };
 
-  const vars: ExpectedInferredType = env.parse(
+  const vars: ExpectedInferredType = await env.parse(
     testEnv,
     config,
   );
@@ -114,9 +114,10 @@ Deno.test("happy path works for all built-in parsers with Deno-like env", () => 
   });
 });
 
-Deno.test("custom parser rejects with provided description", () => {
-  const parse = () => env.parse({ VAR: "1.2" }, { VAR: bigIntParser });
-  const error = assertThrows(parse);
+Deno.test("custom parser rejects with provided description", async () => {
+  const parse = async () =>
+    await env.parse({ VAR: "1.2" }, { VAR: bigIntParser });
+  const error = await assertRejects(parse);
   assertInstanceOf(error, env.EnvironmentVariableParseError);
   assertStrictEquals(
     error.message,
@@ -124,9 +125,10 @@ Deno.test("custom parser rejects with provided description", () => {
   );
 });
 
-Deno.test("integer parser rejects non-integer numbers", () => {
-  const parse = () => env.parse({ VAR: "1.2" }, { VAR: env.integer() });
-  const error = assertThrows(parse);
+Deno.test("integer parser rejects non-integer numbers", async () => {
+  const parse = async () =>
+    await env.parse({ VAR: "1.2" }, { VAR: env.integer() });
+  const error = await assertRejects(parse);
   assertInstanceOf(error, env.EnvironmentVariableParseError);
   assertStrictEquals(
     error.message,
@@ -134,9 +136,10 @@ Deno.test("integer parser rejects non-integer numbers", () => {
   );
 });
 
-Deno.test("json parser rejects invalid JSON", () => {
-  const parse = () => env.parse({ VAR: "undefined" }, { VAR: env.json() });
-  const error = assertThrows(parse);
+Deno.test("json parser rejects invalid JSON", async () => {
+  const parse = async () =>
+    await env.parse({ VAR: "undefined" }, { VAR: env.json() });
+  const error = await assertRejects(parse);
   assertInstanceOf(error, env.EnvironmentVariableParseError);
   assertStrictEquals(
     error.message,
@@ -144,9 +147,10 @@ Deno.test("json parser rejects invalid JSON", () => {
   );
 });
 
-Deno.test("number parser rejects non-number values", () => {
-  const parse = () => env.parse({ VAR: '"1.2"' }, { VAR: env.number() });
-  const error = assertThrows(parse);
+Deno.test("number parser rejects non-number values", async () => {
+  const parse = async () =>
+    await env.parse({ VAR: '"1.2"' }, { VAR: env.number() });
+  const error = await assertRejects(parse);
   assertInstanceOf(error, env.EnvironmentVariableParseError);
   assertStrictEquals(
     error.message,
@@ -154,9 +158,10 @@ Deno.test("number parser rejects non-number values", () => {
   );
 });
 
-Deno.test("port parser rejects integers out of port range", () => {
-  const parse = () => env.parse({ VAR: "65536" }, { VAR: env.port() });
-  const error = assertThrows(parse);
+Deno.test("port parser rejects integers out of port range", async () => {
+  const parse = async () =>
+    await env.parse({ VAR: "65536" }, { VAR: env.port() });
+  const error = await assertRejects(parse);
   assertInstanceOf(error, env.EnvironmentVariableParseError);
   assertStrictEquals(
     error.message,
@@ -164,9 +169,10 @@ Deno.test("port parser rejects integers out of port range", () => {
   );
 });
 
-Deno.test("port parser rejects non-integer numbers", () => {
-  const parse = () => env.parse({ VAR: "8080.1" }, { VAR: env.port() });
-  const error = assertThrows(parse);
+Deno.test("port parser rejects non-integer numbers", async () => {
+  const parse = async () =>
+    await env.parse({ VAR: "8080.1" }, { VAR: env.port() });
+  const error = await assertRejects(parse);
   assertInstanceOf(error, env.EnvironmentVariableParseError);
   assertStrictEquals(
     error.message,
@@ -174,7 +180,7 @@ Deno.test("port parser rejects non-integer numbers", () => {
   );
 });
 
-Deno.test("multiple errors are combined in order based on variable name", () => {
+Deno.test("multiple errors are combined in order based on variable name", async () => {
   const config = {
     D_PORT: env.port(),
     A_NUMBER: env.number(),
@@ -186,8 +192,8 @@ Deno.test("multiple errors are combined in order based on variable name", () => 
     B_INTEGER: "1.2",
     A_NUMBER: "null",
   };
-  const parse = () => env.parse(testEnv, config);
-  const error = assertThrows(parse);
+  const parse = async () => await env.parse(testEnv, config);
+  const error = await assertRejects(parse);
   assertInstanceOf(error, env.EnvironmentVariableParseError);
   assertStrictEquals(
     error.message,

@@ -70,12 +70,25 @@ const portParser: Parser<number, true> = createParser(
   "must be a valid port number",
 );
 
+/** Create a `string` parser. */
 export const string = () => stringParser;
+/** Create a parser for arbitrary valid JSON. */
 export const json = () => jsonParser;
+/** Create a parser for numbers. */
 export const number = () => numberParser;
+/** Create a parser for numbers that only accepts integers. */
 export const integer = () => integerParser;
+/**
+ * Create a parser for integers that only accepts valid port numbers
+ * (0-65535).
+ */
 export const port = () => portParser;
 
+/**
+ * Create a custom parser from a description (e.g. `"must be a valid BigInt"`)
+ * and a parse function. The description will be used to generate error
+ * messages when the parse function fails for a variable.
+ */
 export const custom = <T>(
   description: string,
   parse: ParseFunction<T>,
