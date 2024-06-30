@@ -75,3 +75,10 @@ export const json = () => jsonParser;
 export const number = () => numberParser;
 export const integer = () => integerParser;
 export const port = () => portParser;
+
+export const custom = <T>(
+  description: string,
+  parse: ParseFunction<T>,
+): Parser<T, true> => {
+  return createParser(parse, description);
+};

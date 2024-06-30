@@ -36,6 +36,11 @@ const config = {
   PORT: env.port(),
   // Any variable can be made optional.
   OPTIONAL_STRING: env.string().optional(),
+  // Custom parsers are also supported.
+  CUSTOM_BIG_INT: env.custom(
+    "must be a valid BigInt",
+    (value: string) => BigInt(value),
+  ),
 };
 
 // If one or more variables fail to parse, this
@@ -53,5 +58,6 @@ type InferredTypeOfVars = {
   STRING: string;
   PORT: number;
   OPTIONAL_STRING: string | undefined;
+  CUSTOM_BIG_INT: bigint;
 };
 ```

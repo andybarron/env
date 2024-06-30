@@ -6,6 +6,10 @@ import {
 } from "jsr:@std/assert";
 import * as env from "./mod.ts";
 
+const parseBigInt = (value: string) => BigInt(value);
+
+const bigIntParser = env.custom("must be a valid BigInt", parseBigInt);
+
 Deno.test("happy path works for all built-in parsers with Node-like env", () => {
   const config = {
     INTEGER: env.integer(),
@@ -14,6 +18,7 @@ Deno.test("happy path works for all built-in parsers with Node-like env", () => 
     STRING: env.string(),
     PORT: env.port(),
     OPTIONAL_STRING: env.string().optional(),
+    BIG_INT: bigIntParser,
   };
 
   const testEnv: Record<string, string | undefined> = {
@@ -23,6 +28,7 @@ Deno.test("happy path works for all built-in parsers with Node-like env", () => 
     STRING: "theory",
     PORT: "8080",
     // OPTIONAL_STRING intentionally omitted
+    BIG_INT: "99999999999999999",
   };
 
   type ExpectedInferredType = {
@@ -32,6 +38,7 @@ Deno.test("happy path works for all built-in parsers with Node-like env", () => 
     STRING: string;
     PORT: number;
     OPTIONAL_STRING: string | undefined;
+    BIG_INT: bigint;
   };
 
   const vars: ExpectedInferredType = env.parse(
@@ -48,6 +55,7 @@ Deno.test("happy path works for all built-in parsers with Node-like env", () => 
     OPTIONAL_STRING: undefined,
     PORT: 8080,
     STRING: "theory",
+    BIG_INT: 99999999999999999n,
   });
 });
 
@@ -59,6 +67,7 @@ Deno.test("happy path works for all built-in parsers with Deno-like env", () => 
     STRING: env.string(),
     PORT: env.port(),
     OPTIONAL_STRING: env.string().optional(),
+    BIG_INT: bigIntParser,
   };
 
   const values: Record<string, string | undefined> = {
@@ -68,6 +77,7 @@ Deno.test("happy path works for all built-in parsers with Deno-like env", () => 
     STRING: "theory",
     PORT: "8080",
     // OPTIONAL_STRING intentionally omitted
+    BIG_INT: "99999999999999999",
   };
 
   const testEnv = {
@@ -83,6 +93,7 @@ Deno.test("happy path works for all built-in parsers with Deno-like env", () => 
     STRING: string;
     PORT: number;
     OPTIONAL_STRING: string | undefined;
+    BIG_INT: bigint;
   };
 
   const vars: ExpectedInferredType = env.parse(
@@ -99,7 +110,18 @@ Deno.test("happy path works for all built-in parsers with Deno-like env", () => 
     OPTIONAL_STRING: undefined,
     PORT: 8080,
     STRING: "theory",
+    BIG_INT: 99999999999999999n,
   });
+});
+
+Deno.test("custom parser rejects with provided description", () => {
+  const parse = () => env.parse({ VAR: "1.2" }, { VAR: bigIntParser });
+  const error = assertThrows(parse);
+  assertInstanceOf(error, env.EnvironmentVariableParseError);
+  assertStrictEquals(
+    error.message,
+    'Failed to parse environment variables: "VAR" must be a valid BigInt',
+  );
 });
 
 Deno.test("integer parser rejects non-integer numbers", () => {
