@@ -1,10 +1,13 @@
-# `@andyb/env`
+# [`@andyb/env`](https://github.com/andybarron/env)
 
 _Parse environment variables in Node, Deno, and Bun_
 
-[![JSR Score](https://jsr.io/badges/@andyb/env/score)](https://jsr.io/@andyb/env)
-[![JSR](https://jsr.io/badges/@andyb/env)](https://jsr.io/@andyb/env)
-[![JSR Scope](https://jsr.io/badges/@andyb)](https://jsr.io/@andyb)
+[Documentation](https://jsr.io/@andyb/env/doc) &bull;
+[Source](https://github.com/andybarron/env)
+
+[![JSR Version](https://img.shields.io/jsr/v/%40andyb/env?style=flat&logo=jsr&color=%231e1f45)](https://jsr.io/@andyb/env)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/andybarron/env/ci.yml?branch=main&style=flat&logo=github)](https://github.com/andybarron/env/actions?query=branch%3Amain)
+[![Codecov](https://img.shields.io/codecov/c/github/andybarron/env?style=flat&logo=codecov)](https://app.codecov.io/github/andybarron/env)
 
 ## Installation
 

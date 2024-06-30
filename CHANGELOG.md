@@ -6,6 +6,7 @@
 - Add CI workflows for linting, formatting, and testing
 - Add publishing workflow
 - Script changes for publishing via CI instead of locally
+- Add fancy badges :sunglasses:
 
 ## 0.0.2
 
