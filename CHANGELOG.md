@@ -3,6 +3,7 @@
 ## 0.0.3
 
 - Add CHANGELOG
+- Add CI workflows for linting, formatting, testing, and publishing
 - Script and config changes for publishing via CI instead of locally
 
 ## 0.0.2
