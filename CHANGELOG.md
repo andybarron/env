@@ -3,6 +3,7 @@
 ## 0.1.0
 
 - Add support for custom parsers
+- Add typecheck step to CI
 
 ## 0.0.3
 
