@@ -1,5 +1,3 @@
-import type { PARSER_INTERNALS_KEY } from "./constants.ts";
-
 export type NodeProcessEnv = Record<string, string | undefined>;
 export type DenoEnv = {
   get: (key: string) => string | undefined;
@@ -36,21 +34,32 @@ export type JsonValue =
 /**
  * Environment variable parser created by built-in parser
  * functions (e.g. {@link integer}, {@link json}) or by user-defined
- * custom parse functions (via {@link custom}).
+ * custom parse functions (via {@link custom}). Intended for use by
+ * the {@link parse} function.
+ *
+ * All configuration functions are chainable:
+ * @example
+ * ```ts
+ * const envConfig = {
+ *   json: env.json()
+ *     .optional()
+ *     .description('must be valid JSON'),
+ * };
+ * ```
  */
 export type Parser<T, IsRequired extends boolean> = {
   /** Create an identical parser that allows undefined environment variables. */
-  required: () => Parser<T, true>;
+  readonly required: () => Parser<T, true>;
   /** Create an identical parser that rejects undefined environment variables. */
-  optional: () => Parser<T, false>;
-  /** @internal */
-  [PARSER_INTERNALS_KEY]: ParserInternals<T, IsRequired>;
-};
-
-export type ParserInternals<T, IsRequired extends boolean> = {
-  parse: ParseFunction<T>;
-  isRequired: IsRequired;
-  description: string;
+  readonly optional: () => Parser<T, false>;
+  /** Create an identical parser that targets a different environment variable. */
+  readonly variable: (name: string) => Parser<T, IsRequired>;
+  /** Create an identical parser with a different description (e.g. `"must be valid JSON"`). */
+  readonly description: (description: string) => Parser<T, IsRequired>;
+  readonly _parse: ParseFunction<T>;
+  readonly _description: string;
+  readonly _required: boolean;
+  readonly _variable: string | undefined;
 };
 
 /**

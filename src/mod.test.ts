@@ -5,6 +5,7 @@ import {
   assertStrictEquals,
 } from "jsr:@std/assert";
 import * as env from "./mod.ts";
+import { parse } from "./parse.ts";
 
 const parseBigInt = (value: string) => BigInt(value);
 
@@ -180,6 +181,33 @@ Deno.test("port parser rejects non-integer numbers", async () => {
   );
 });
 
+Deno.test("boolean parser accepts valid booleans", async () => {
+  const config = {
+    TRUE: env.boolean(),
+    FALSE: env.boolean(),
+  };
+  const testEnv = {
+    TRUE: "true",
+    FALSE: "false",
+  };
+  const vars = await parse(testEnv, config);
+  assertEquals(vars, {
+    TRUE: true,
+    FALSE: false,
+  });
+});
+
+Deno.test("boolean parser rejects invalid booleans", async () => {
+  const parse = async () =>
+    await env.parse({ VAR: "1" }, { VAR: env.boolean() });
+  const error = await assertRejects(parse);
+  assertInstanceOf(error, env.EnvironmentVariableParseError);
+  assertStrictEquals(
+    error.message,
+    'Failed to parse environment variables: "VAR" must be "true" or "false"',
+  );
+});
+
 Deno.test("multiple errors are combined in order based on variable name", async () => {
   const config = {
     D_PORT: env.port(),
@@ -207,8 +235,38 @@ Deno.test("multiple errors are combined in order based on variable name", async 
   );
 });
 
-Deno.test("chaining required() and optional() calls returns the same parser instance", () => {
-  const original = env.string();
-  const copy = original.required().required().optional().optional().required();
-  assertStrictEquals(copy, original);
+Deno.test("calling required() makes an optional parser reject missing variables", async () => {
+  const parser = env.string().optional().required();
+  const parse = async () => await env.parse({}, { VAR: parser });
+  const error = await assertRejects(parse);
+  assertInstanceOf(error, env.EnvironmentVariableParseError);
+  assertStrictEquals(
+    error.message,
+    'Failed to parse environment variables: "VAR" must be set',
+  );
+});
+
+Deno.test("calling description() changes error message", async () => {
+  const parse = async () =>
+    await env.parse({ VAR: "1.2" }, {
+      VAR: env.integer().description("must be a really cool integer"),
+    });
+  const error = await assertRejects(parse);
+  assertInstanceOf(error, env.EnvironmentVariableParseError);
+  assertStrictEquals(
+    error.message,
+    'Failed to parse environment variables: "VAR" must be a really cool integer',
+  );
+});
+
+Deno.test("calling variable() changes target environment variable", async () => {
+  const testEnv = {
+    GREETING: "hello",
+  };
+  const vars = await env.parse(testEnv, {
+    renamed: env.string().variable("GREETING"),
+  });
+  assertEquals(vars, {
+    renamed: "hello",
+  });
 });

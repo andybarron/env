@@ -1,4 +1,3 @@
-import { PARSER_INTERNALS_KEY } from "./constants.ts";
 import { EnvironmentVariableParseError } from "./errors.ts";
 import type {
   DenoEnv,
@@ -29,23 +28,24 @@ export async function parse<T extends EnvironmentConfig>(
   const values: Record<string, unknown> = {};
   const failures: ParseFailure[] = [];
 
-  for (const [name, parser] of Object.entries(config)) {
-    const { description, isRequired, parse } = parser[PARSER_INTERNALS_KEY];
-    const value = get(name);
+  for (const [key, parser] of Object.entries(config)) {
+    const variableName = parser._variable ?? key;
+    const description = parser._description;
+    const value = get(variableName);
     if (value == undefined) {
-      if (isRequired) {
-        const cause = new TypeError(`${JSON.stringify(name)} not set`);
-        failures.push({ name, description, cause });
+      if (parser._required) {
+        const cause = new TypeError(`${JSON.stringify(variableName)} not set`);
+        failures.push({ name: variableName, description, cause });
       } else {
-        values[name] = undefined;
+        values[key] = undefined;
       }
       continue;
     }
     try {
-      const parsed = await parse(value);
-      values[name] = parsed;
+      const parsed = await parser._parse(value);
+      values[key] = parsed;
     } catch (error: unknown) {
-      failures.push({ name, description, cause: error });
+      failures.push({ name: variableName, description, cause: error });
     }
   }
 

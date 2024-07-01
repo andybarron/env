@@ -1,4 +1,4 @@
-import { createParser } from "./parser.ts";
+import { parser } from "./parser.ts";
 import type { JsonValue, ParseFunction, Parser } from "./types.ts";
 
 const parseString: ParseFunction<string> = (value) => value;
@@ -48,27 +48,53 @@ const parsePort = (value: string): number => {
     );
   }
 };
+const parseBoolean = (value: string): boolean => {
+  switch (value) {
+    case "true":
+      return true;
+    case "false":
+      return false;
+    default:
+      throw new TypeError("Value cannot be parsed as a boolean");
+  }
+};
 
-const stringParser: Parser<string, true> = createParser(
-  parseString,
-  "must be set",
-);
-const jsonParser: Parser<JsonValue, true> = createParser(
-  parseJson,
-  "must be JSON",
-);
-const numberParser: Parser<number, true> = createParser(
-  parseNumber,
-  "must be a number",
-);
-const integerParser: Parser<number, true> = createParser(
-  parseInteger,
-  "must be an integer",
-);
-const portParser: Parser<number, true> = createParser(
-  parsePort,
-  "must be a valid port number",
-);
+const stringParser: Parser<string, true> = parser({
+  description: "must be set",
+  parse: parseString,
+  required: true,
+  variableName: undefined,
+});
+const jsonParser: Parser<JsonValue, true> = parser({
+  description: "must be JSON",
+  parse: parseJson,
+  required: true,
+  variableName: undefined,
+});
+const numberParser: Parser<number, true> = parser({
+  description: "must be a number",
+  parse: parseNumber,
+  required: true,
+  variableName: undefined,
+});
+const integerParser: Parser<number, true> = parser({
+  description: "must be an integer",
+  parse: parseInteger,
+  required: true,
+  variableName: undefined,
+});
+const portParser: Parser<number, true> = parser({
+  description: "must be a valid port number",
+  parse: parsePort,
+  required: true,
+  variableName: undefined,
+});
+const booleanParser: Parser<boolean, true> = parser({
+  description: 'must be "true" or "false"',
+  parse: parseBoolean,
+  required: true,
+  variableName: undefined,
+});
 
 /** Create a `string` parser. */
 export const string = () => stringParser;
@@ -83,6 +109,8 @@ export const integer = () => integerParser;
  * (0-65535).
  */
 export const port = () => portParser;
+/** Create a parser for booleans. (Accepts the values `"true"` and `"false"`.) */
+export const boolean = () => booleanParser;
 
 /**
  * Create a custom parser from a description (e.g. `"must be a valid BigInt"`)
@@ -93,5 +121,10 @@ export const custom = <T>(
   description: string,
   parse: ParseFunction<T>,
 ): Parser<T, true> => {
-  return createParser(parse, description);
+  return parser({
+    description,
+    parse,
+    required: true,
+    variableName: undefined,
+  });
 };
