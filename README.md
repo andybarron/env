@@ -1,6 +1,6 @@
 # [`@andyb/env`](https://github.com/andybarron/env)
 
-_Parse environment variables in Node, Deno, and Bun_
+_Zero-dependency environment variable parsing in Node, Deno, and Bun_
 
 [Documentation](https://jsr.io/@andyb/env/doc) &bull;
 [Source](https://github.com/andybarron/env)
@@ -8,56 +8,95 @@ _Parse environment variables in Node, Deno, and Bun_
 [![JSR Version](https://img.shields.io/jsr/v/%40andyb/env?style=flat&logo=jsr&color=%231e1f45)](https://jsr.io/@andyb/env)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/andybarron/env/ci.yml?branch=main&style=flat&logo=github)](https://github.com/andybarron/env/actions?query=branch%3Amain)
 [![Codecov](https://img.shields.io/codecov/c/github/andybarron/env?style=flat&logo=codecov)](https://app.codecov.io/github/andybarron/env)
+[![JSR Dependencies](https://img.shields.io/badge/dependencies-0-8A2BE2)](https://jsr.io/@andyb/env/dependencies)
 
 ## Installation
 
-| Package manager | Install command               |
-| --------------- | ----------------------------- |
-| Bun             | `bunx jsr add @andyb/env`     |
-| Deno            | `deno add @andyb/env`         |
-| NPM             | `npx jsr add @andyb/env`      |
-| PNPM            | `pnpm dlx jsr add @andyb/env` |
-| Yarn            | `yarn dlx jsr add @andyb/env` |
+| Tool                         | Install command               |
+| ---------------------------- | ----------------------------- |
+| [Bun](https://bun.sh)        | `bunx jsr add @andyb/env`     |
+| [Deno](https://deno.com)     | `deno add @andyb/env`         |
+| [NPM](https://www.npmjs.com) | `npx jsr add @andyb/env`      |
+| [PNPM](https://pnpm.io)      | `pnpm dlx jsr add @andyb/env` |
+| [Yarn](https://yarnpkg.com)  | `yarn dlx jsr add @andyb/env` |
 
-## Usage
+## Quickstart
 
 ```ts
 import * as env from "@andyb/env";
 
-// Define variables and parsers.
-const config = {
-  // Reject non-integer numbers.
-  INTEGER: env.integer(),
-  // Parse arbitrary JSON.
-  JSON: env.json(),
-  NUMBER: env.number(),
-  STRING: env.string(),
-  // Reject non-integers and invalid ports.
-  PORT: env.port(),
-  // Any variable can be made optional.
-  OPTIONAL_STRING: env.string().optional(),
-  // Custom parsers are also supported.
-  CUSTOM_BIG_INT: env.custom(
-    "must be a valid BigInt",
-    (value: string) => BigInt(value),
-  ),
+// parse() is compatible with process.env in Node and Deno.env in Deno.
+// On failure, the thrown error will report every variable that failed to parse.
+const config = await parse(process.env, {
+  // Specify expected type and environment variable name.
+  favoriteNumber: env.integer().variable("FAVORITE_NUMBER"),
+  // Mark some environment variables as optional. They will only be parsed if present.
+  nickname: env.string().variable("NICKNAME").optional(),
+  // Default values can be provided. This makes the variable optional as well.
+  lovesDeno: env.boolean().variable("LOVES_DENO").default(true),
+  // If no variable is specified, the property name will be used.
+  TZ: env.string(),
+});
+
+// config will have its type inferred correctly:
+type InferredType = {
+  favoriteNumber: number;
+  nickname: string | undefined;
+  lovesDeno: boolean;
+  TZ: string;
 };
+```
 
-// If one or more variables fail to parse, this
-// throws a helpful error listing every failure.
-const vars = await env.parse(
-  process.env, // or Deno.env
-  config,
-);
+## Custom parsers
 
-// Type inference works out of the box. Example:
-type InferredTypeOfVars = {
+```ts
+import * as env from "@andyb/env";
+import ms from "ms";
+
+const config = await parse(process.env, {
+  // To parse custom types, provide a description and a parser function.
+  timeoutMs: env.custom(
+    'must be a duration e.g. "10 seconds"',
+    (value: string): number => ms(value),
+  ),
+  // Custom parsers can be async, and they have the same chainable
+  // configuration methods as the built-in parsers.
+  healthCheck: env.custom(
+    "must be a valid URL to fetch",
+    async (value: string): Promise<number> => {
+      const response = await fetch(value);
+      return response.status;
+    },
+  ),
+});
+
+// Type inference works for custom and async parsers as well:
+type InferredType = {
+  timeoutMs: number;
+  healthCheck: number;
+};
+```
+
+## Built-in parser types
+
+```ts
+import * as env from "@andyb/env";
+
+const config = await env.parse(process.env, {
+  BOOLEAN: env.boolean(), // only accepts "true" and "false"
+  INTEGER: env.integer(),
+  JSON: env.json(), // accepts any valid JSON value
+  NUMBER: env.number(),
+  PORT: env.port(), // accepts integers from 0 to 65545
+  STRING: env.string(),
+});
+
+type InferredType = {
+  BOOLEAN: boolean;
   INTEGER: number;
   JSON: env.JsonValue;
   NUMBER: number;
-  STRING: string;
   PORT: number;
-  OPTIONAL_STRING: string | undefined;
-  CUSTOM_BIG_INT: bigint;
+  STRING: string;
 };
 ```
