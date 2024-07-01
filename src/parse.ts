@@ -31,12 +31,18 @@ export async function parse<T extends EnvironmentConfig>(
   for (const [key, parser] of Object.entries(config)) {
     const variable = parser._variable ?? key;
     const value = get(variable);
-    if (value == undefined) {
-      if (parser._required) {
-        const cause = new TypeError(`${JSON.stringify(variable)} not set`);
-        failures.push({ variable, parser, cause });
-      } else {
-        values[key] = undefined;
+    if (!value) { // treat empty as missing
+      switch (parser._type) {
+        case "required": {
+          const cause = new TypeError(`${JSON.stringify(variable)} not set`);
+          failures.push({ variable, parser, cause });
+          break;
+        }
+        case "optional":
+          values[key] = undefined;
+          break;
+        case "default":
+          values[key] = parser._defaultValue;
       }
       continue;
     }

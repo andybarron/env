@@ -59,40 +59,46 @@ const parseBoolean = (value: string): boolean => {
   }
 };
 
-const stringParser: Parser<string, true> = parser({
+const stringParser: Parser<string, "required"> = parser({
   description: "must be set",
   parse: parseString,
-  required: true,
+  type: "required",
+  defaultValue: undefined,
   variableName: undefined,
 });
-const jsonParser: Parser<JsonValue, true> = parser({
+const jsonParser: Parser<JsonValue, "required"> = parser({
   description: "must be JSON",
   parse: parseJson,
-  required: true,
+  type: "required",
+  defaultValue: undefined,
   variableName: undefined,
 });
-const numberParser: Parser<number, true> = parser({
+const numberParser: Parser<number, "required"> = parser({
   description: "must be a number",
   parse: parseNumber,
-  required: true,
+  type: "required",
+  defaultValue: undefined,
   variableName: undefined,
 });
-const integerParser: Parser<number, true> = parser({
+const integerParser: Parser<number, "required"> = parser({
   description: "must be an integer",
   parse: parseInteger,
-  required: true,
+  type: "required",
+  defaultValue: undefined,
   variableName: undefined,
 });
-const portParser: Parser<number, true> = parser({
+const portParser: Parser<number, "required"> = parser({
   description: "must be a valid port number",
   parse: parsePort,
-  required: true,
+  type: "required",
+  defaultValue: undefined,
   variableName: undefined,
 });
-const booleanParser: Parser<boolean, true> = parser({
+const booleanParser: Parser<boolean, "required"> = parser({
   description: 'must be "true" or "false"',
   parse: parseBoolean,
-  required: true,
+  type: "required",
+  defaultValue: undefined,
   variableName: undefined,
 });
 
@@ -120,11 +126,12 @@ export const boolean = () => booleanParser;
 export const custom = <T>(
   description: string,
   parse: ParseFunction<T>,
-): Parser<T, true> => {
+): Parser<T, "required"> => {
   return parser({
     description,
     parse,
-    required: true,
+    type: "required",
+    defaultValue: undefined,
     variableName: undefined,
   });
 };

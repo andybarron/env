@@ -1,29 +1,45 @@
-import type { ParseFunction, Parser } from "./types.ts";
+import type { ParseFunction, Parser, ParserType } from "./types.ts";
 
-export type ParserParams<T, IsRequired extends boolean> = {
+export type ParserParams<
+  T,
+  Type extends ParserType,
+> = {
   readonly parse: ParseFunction<T>;
-  readonly required: IsRequired;
+  readonly type: Type;
   readonly description: string;
   readonly variableName: string | undefined;
+  readonly defaultValue: Type extends "default" ? T : undefined;
 };
 
-export function parser<T, IsRequired extends boolean>(
-  { description, required, parse, variableName }: ParserParams<T, IsRequired>,
-): Parser<T, IsRequired> {
-  const params: ParserParams<T, IsRequired> = {
-    description,
-    required,
+export function parser<T, Type extends ParserType>(
+  {
     parse,
+    type,
+    description,
     variableName,
+    defaultValue,
+  }: ParserParams<T, Type>,
+): Parser<T, Type> {
+  const params: ParserParams<T, Type> = {
+    parse,
+    type,
+    description,
+    variableName,
+    defaultValue,
   };
   return {
     _description: description,
     _parse: parse,
-    _required: required,
     _variable: variableName,
-    description: (description) => parser({ ...params, description }),
-    optional: () => parser({ ...params, required: false }),
-    required: () => parser({ ...params, required: true }),
+    _defaultValue: defaultValue,
+    _type: type,
+    required: () =>
+      parser({ ...params, type: "required", defaultValue: undefined }),
+    optional: () =>
+      parser({ ...params, type: "optional", defaultValue: undefined }),
+    default: (defaultValue) =>
+      parser({ ...params, type: "default", defaultValue }),
     variable: (variableName) => parser({ ...params, variableName }),
+    description: (description) => parser({ ...params, description }),
   };
 }

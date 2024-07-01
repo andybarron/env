@@ -281,3 +281,15 @@ Deno.test("calling variable() changes target environment variable", async () => 
     renamed: "hello",
   });
 });
+
+Deno.test("calling default() makes variable optional and uses default value", async () => {
+  const testEnv = {
+    NAME: "",
+  };
+  const vars = await env.parse(testEnv, {
+    name: env.string().variable("NAME").default("Flumpus"),
+  });
+  assertEquals(vars, {
+    name: "Flumpus",
+  });
+});

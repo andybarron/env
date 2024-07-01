@@ -14,7 +14,7 @@ export class EnvironmentVariableParseError extends Error {
     if (failures.length) {
       const failSummary = failures.map(({ variable, parser }) => {
         const variableName = JSON.stringify(variable);
-        const variableDescription = parser._required
+        const variableDescription = parser._type === "required"
           ? variableName
           : `${variableName} (optional)`;
         return `${variableDescription} ${parser._description}`;
