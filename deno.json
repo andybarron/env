@@ -6,7 +6,7 @@
   "tasks": {
     "cache": "deno cache scripts/**/* src/**/* npm:husky npm:lint-staged",
     "clean": "rm -rf coverage",
-    "coverage": "deno test --coverage && deno coverage --html && open coverage/html/index.html",
+    "coverage": "deno task clean && deno test --coverage && deno coverage --html && open coverage/html/index.html",
     "init": "deno task cache && deno run -A npm:husky",
     "lint-staged": "deno run -A npm:lint-staged",
     "preflight": "deno fmt --check && deno lint && deno task typecheck && deno test --coverage && deno coverage",
