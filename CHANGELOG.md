@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0
+
+- Add `variable` method so environment variable names can be different from
+  output object keys
+- Add `boolean` parser
+- Add `description` method to override descriptions of existing `Parser`
+  instances
+- Show which variables are optional in `EnvironmentVariableParseError` summary
+- Internal refactor of `Parser` type and construction
+
 ## 0.1.0
 
 - Add support for custom parsers
