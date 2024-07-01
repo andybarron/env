@@ -9,6 +9,11 @@
 - Add `boolean` parser
 - Add `description` method to override descriptions of existing `Parser`
   instances
+- Treat empty environment variables as missing. Old behavior can be emulated
+  with the new `default()` method if desired:
+  ```ts
+  env.string().default("");
+  ```
 - Show which variables are optional in `EnvironmentVariableParseError` summary
 - Internal refactor of `Parser` type and construction
 
