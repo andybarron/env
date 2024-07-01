@@ -2,6 +2,8 @@
 
 ## 0.2.0
 
+- Add `default` method allowing default values for optional environment
+  variables
 - Add `variable` method so environment variable names can be different from
   output object keys
 - Add `boolean` parser
