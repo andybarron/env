@@ -293,3 +293,24 @@ Deno.test("calling default() makes variable optional and uses default value", as
     name: "Flumpus",
   });
 });
+
+Deno.test("type inference and parsing work correctly for async custom parsers", async () => {
+  type ExpectedInferredType = {
+    ASYNC_STRING: string;
+  };
+
+  const config = {
+    ASYNC_STRING: env.custom(
+      "must be something or other",
+      (value: string) => Promise.resolve(value),
+    ),
+  };
+
+  const values: ExpectedInferredType = await env.parse({
+    ASYNC_STRING: "panda",
+  }, config);
+
+  assertEquals(values, {
+    ASYNC_STRING: "panda",
+  });
+});
