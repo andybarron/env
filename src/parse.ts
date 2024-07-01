@@ -17,6 +17,9 @@ function isDenoEnv(env: Environment): env is DenoEnv {
  *
  * Custom parsers can be asynchronous, so this function returns
  * a promise.
+ *
+ * @throws {@link EnvironmentVariableParseError} if any variable
+ * fails to parse.
  */
 export async function parse<T extends EnvironmentConfig>(
   env: Environment,
