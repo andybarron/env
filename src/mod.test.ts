@@ -208,6 +208,17 @@ Deno.test("boolean parser rejects invalid booleans", async () => {
   );
 });
 
+Deno.test("optional errors are rejected if parse fails", async () => {
+  const parse = async () =>
+    await env.parse({ VAR: "12.1" }, { VAR: env.integer().optional() });
+  const error = await assertRejects(parse);
+  assertInstanceOf(error, env.EnvironmentVariableParseError);
+  assertStrictEquals(
+    error.message,
+    'Failed to parse environment variables: "VAR" (optional) must be an integer',
+  );
+});
+
 Deno.test("multiple errors are combined in order based on variable name", async () => {
   const config = {
     D_PORT: env.port(),

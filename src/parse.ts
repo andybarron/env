@@ -29,13 +29,12 @@ export async function parse<T extends EnvironmentConfig>(
   const failures: ParseFailure[] = [];
 
   for (const [key, parser] of Object.entries(config)) {
-    const variableName = parser._variable ?? key;
-    const description = parser._description;
-    const value = get(variableName);
+    const variable = parser._variable ?? key;
+    const value = get(variable);
     if (value == undefined) {
       if (parser._required) {
-        const cause = new TypeError(`${JSON.stringify(variableName)} not set`);
-        failures.push({ name: variableName, description, cause });
+        const cause = new TypeError(`${JSON.stringify(variable)} not set`);
+        failures.push({ variable, parser, cause });
       } else {
         values[key] = undefined;
       }
@@ -45,7 +44,7 @@ export async function parse<T extends EnvironmentConfig>(
       const parsed = await parser._parse(value);
       values[key] = parsed;
     } catch (error: unknown) {
-      failures.push({ name: variableName, description, cause: error });
+      failures.push({ variable, parser, cause: error });
     }
   }
 

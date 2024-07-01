@@ -12,9 +12,13 @@ export class EnvironmentVariableParseError extends Error {
     const failures = allFailures.toSorted(failureSort);
     let message = "Failed to parse environment variables";
     if (failures.length) {
-      const failSummary = failures.map(({ name, description }) =>
-        `${JSON.stringify(name)} ${description}`
-      ).join(", ");
+      const failSummary = failures.map(({ variable, parser }) => {
+        const variableName = JSON.stringify(variable);
+        const variableDescription = parser._required
+          ? variableName
+          : `${variableName} (optional)`;
+        return `${variableDescription} ${parser._description}`;
+      }).join(", ");
       message = `${message}: ${failSummary}`;
     }
     super(message);
@@ -24,10 +28,10 @@ export class EnvironmentVariableParseError extends Error {
 }
 
 const failureSort = (a: ParseFailure, b: ParseFailure): -1 | 0 | 1 => {
-  if (a.name < b.name) {
+  if (a.variable < b.variable) {
     return -1;
   }
-  if (a.name > b.name) {
+  if (a.variable > b.variable) {
     return 1;
   }
   return 0; // TODO: coverage ignore - https://github.com/denoland/deno/issues/16626

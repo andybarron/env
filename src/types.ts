@@ -92,9 +92,9 @@ export type ValuesFromConfig<T extends EnvironmentConfig> = {
  */
 export type ParseFailure = {
   /** Environment variable name */
-  name: string;
-  /** Description of what the value should be */
-  description: string;
+  variable: string;
+  /** Parser that rejected the value */
+  parser: Parser<unknown, boolean>;
   /** Underlying error that was thrown during parsing */
   cause: unknown;
 };
