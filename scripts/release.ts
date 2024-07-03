@@ -3,13 +3,7 @@ import { parseArgs, type ParseOptions } from "jsr:@std/cli";
 import { dirname } from "jsr:@std/path";
 import * as semver from "jsr:@std/semver";
 import { GITUtility } from "jsr:@utility/git";
-import {
-  log,
-  printRandomQuote,
-  prompt,
-  type RemoveIndex,
-  sleep,
-} from "./util.ts";
+import { log, prompt, type RemoveIndex, sleep } from "./util.ts";
 
 const parseOptions = {
   boolean: ["help", "publish-local", "skip-tag", "allow-dirty"],
@@ -135,7 +129,6 @@ if (!preflightResult.success) {
   Deno.exit(1);
 }
 log.info("Preflight checks passed 🚀");
-printRandomQuote();
 await sleep(3);
 
 // commit and push release version

@@ -1,6 +1,5 @@
 // deno-lint-ignore-file no-console
 import { assert } from "jsr:@std/assert";
-import getQuote from "npm:enquoraging";
 
 export const logStyles = {
   error: "color: red",
@@ -36,19 +35,3 @@ export type RemoveIndex<T> = {
       : K
   ]: T[K];
 };
-
-export function printRandomQuote() {
-  try {
-    const { quote, author }: { quote: string; author: string } = getQuote();
-    console.info(
-      `%c"${quote}"`,
-      "background-color: darkblue; color: white; font-weight: bold",
-    );
-    console.info(
-      `%c ~ ${author}`,
-      "font-weight: bold",
-    );
-  } catch {
-    // ignore
-  }
-}
