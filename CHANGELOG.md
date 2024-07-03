@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- Make parsers and `parse()` synchronous
+
 ## 0.2.0
 
 - Add `default` method allowing default values for optional environment
