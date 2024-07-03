@@ -27,7 +27,7 @@ import * as env from "@andyb/env";
 
 // parse() is compatible with process.env in Node and Deno.env in Deno.
 // On failure, the thrown error will report every variable that failed to parse.
-const config = await parse(process.env, {
+const config = parse(process.env, {
   // Specify expected type and environment variable name.
   favoriteNumber: env.integer().variable("FAVORITE_NUMBER"),
   // Mark some environment variables as optional. They will only be parsed if present.
@@ -53,21 +53,18 @@ type InferredType = {
 import * as env from "@andyb/env";
 import ms from "ms";
 
-const config = await parse(process.env, {
-  // To parse custom types, provide a description and a parser function.
-  timeoutMs: env.custom(
+// To parse custom types, provide a description and a parser function.
+function duration() {
+  return env.custom(
     'must be a duration e.g. "10 seconds"',
     (value: string): number => ms(value),
-  ),
-  // Custom parsers can be async, and they have the same chainable
-  // configuration methods as the built-in parsers.
-  healthCheck: env.custom(
-    "must be a valid URL to fetch",
-    async (value: string): Promise<number> => {
-      const response = await fetch(value);
-      return response.status;
-    },
-  ),
+  );
+}
+
+const config = parse(process.env, {
+  // Custom parsers have the same chainable configuration methods as the
+  // built-in parsers.
+  timeoutMs: duration().variable("TIMEOUT").optional(),
 });
 
 // Type inference works for custom and async parsers as well:
@@ -82,7 +79,7 @@ type InferredType = {
 ```ts
 import * as env from "@andyb/env";
 
-const config = await env.parse(process.env, {
+const config = env.parse(process.env, {
   BOOLEAN: env.boolean(), // only accepts "true" and "false"
   INTEGER: env.integer(),
   JSON: env.json(), // accepts any valid JSON value
