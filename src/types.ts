@@ -12,15 +12,11 @@ export type Environment = NodeProcessEnv | DenoEnv;
  * Function that parses an environment variable into an arbitrary
  * value.
  *
- * Undefined environment variables are handled by the parser, so parse
- * functions don't need to accept null or undefined values (but they
- * may receive empty strings).
- *
- * Parse functions may optionally be asynchronous / return promises.
+ * Missing and empty environment variables are handled by the parser,
+ * so parse functions don't need to accept `null`, `undefined`, or
+ * empty strings.
  */
-export type ParseFunction<T> = (
-  value: string,
-) => T | PromiseLike<T>;
+export type ParseFunction<T> = (value: string) => T;
 /**
  * Arbitrary JSON value. Because `any` is so 2014.
  */
