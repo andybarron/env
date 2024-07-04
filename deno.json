@@ -4,15 +4,15 @@
   "exports": "./src/mod.ts",
   "exclude": ["coverage"],
   "tasks": {
-    "cache": "deno cache scripts/**/* src/**/* npm:husky npm:lint-staged",
+    "cache": "deno cache src/**/* npm:husky npm:lint-staged jsr:@andyb/git-release",
     "clean": "rm -rf coverage",
     "coverage": "deno task clean && deno test --coverage && deno coverage --html && open coverage/html/index.html",
     "init": "deno task cache && deno run -A npm:husky",
     "lint-staged": "deno run -A npm:lint-staged",
     "preflight": "deno fmt --check && deno lint && deno task typecheck && deno test --coverage && deno coverage",
-    "release": "deno run -A scripts/release.ts",
+    "release": "deno task preflight && deno run -A jsr:@andyb/git-release",
     "typecheck": "deno check src/**/*.ts",
-    "update": "deno task cache --reload --lock-write --lock deno.lock"
+    "update": "deno task cache --lock-write --lock deno.lock"
   },
   "publish": {
     "include": ["src/**/*", "LICENSE.md", "README.md"],
@@ -22,5 +22,8 @@
     "rules": {
       "include": ["no-console"]
     }
+  },
+  "imports": {
+    "@andyb/git-release": "jsr:@andyb/git-release@^0.1.0"
   }
 }

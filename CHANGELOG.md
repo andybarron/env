@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Use [`@andyb/git-release`](https://jsr.io/@andyb/git-release) for releases
+
 ## 0.3.0
 
 - Make parsers and `parse()` synchronous
